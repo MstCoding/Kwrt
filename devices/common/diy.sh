@@ -2,7 +2,7 @@
 #=================================================
 shopt -s extglob
 
-sed -i '$a src-git kiddin9 https://github.com/kiddin9/kwrt-packages.git;main' feeds.conf.default
+sed -i '$a src-git kiddin9 https://github.com/kiddin9/op-packages.git;main' feeds.conf.default
 sed -i "/telephony/d" feeds.conf.default
 
 sed -i "s?targets/%S/packages?targets/%S/\$(LINUX_VERSION)?" include/feeds.mk
@@ -35,31 +35,29 @@ wget -N  https://github.com/coolsnowwolf/lede/raw/refs/heads/master/package/syst
 wget -N https://github.com/immortalwrt/immortalwrt/raw/refs/heads/openwrt-25.12/config/Config-kernel.in -P config/
 
 rm -rf package/libs/openssl package/network/services/ppp
-git_clone_path openwrt-25.12 https://github.com/immortalwrt/immortalwrt package/libs/openssl package/network/services/ppp 
+git_clone_path openwrt-25.12 https://github.com/immortalwrt/immortalwrt package/libs/openssl package/network/services/ppp
 
 echo "$(date +"%s")" >version.date
 sed -i '/$(curdir)\/compile:/c\$(curdir)/compile: package/opkg/host/compile' package/Makefile
-sed -i "s/DEFAULT_PACKAGES:=/DEFAULT_PACKAGES:=luci-app-advancedplus luci-app-firewall luci-app-package-manager luci-app-upnp luci-app-syscontrol luci-proto-wireguard \
+sed -i "s/DEFAULT_PACKAGES:=/DEFAULT_PACKAGES:=luci-app-advancedplus luci-app-firewall luci-app-package-manager luci-app-upnp luci-app-syscontrol \
 luci-app-wizard luci-base luci-compat luci-lib-ipkg luci-lib-fs \
-coremark wget-ssl curl autocore htop nano zram-swap kmod-lib-zstd kmod-tcp-bbr bash openssh-sftp-server block-mount resolveip ds-lite swconfig luci-app-fan luci-app-filemanager /" include/target.mk
-
-sed -i "s/procd-ujail//" include/target.mk
+coremark wget-ssl curl autocore htop nano zram-swap kmod-lib-zstd kmod-tcp-bbr bash openssh-sftp-server block-mount resolveip ds-lite swconfig luci-app-fan luci-app-filemanager luci-app-wifihistory /" include/target.mk
 
 sed -i "s/^.*vermagic$/\techo '1' > \$(LINUX_DIR)\/.vermagic/" include/kernel-defaults.mk
 
-sed -i "/attendedsysupgrade/d" feeds/luci/collections/luci*/Makefile
-
-status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/kiddin9/kwrt-packages/actions/runs" | jq -r '.workflow_runs[0].status')
+status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/kiddin9/op-packages/actions/runs" | jq -r '.workflow_runs[0].status')
 echo "$status"
 while [[ "$status" == "in_progress" || "$status" == "queued" ]];do
 	echo "wait 5s"
 	sleep 5
-	status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/kiddin9/kwrt-packages/actions/runs" | jq -r '.workflow_runs[0].status')
+	status=$(curl -H "Authorization: token $REPO_TOKEN" -s "https://api.github.com/repos/kiddin9/op-packages/actions/runs" | jq -r '.workflow_runs[0].status')
 done
 
 wget -N https://raw.githubusercontent.com/openwrt/packages/master/lang/golang/golang/Makefile -P feeds/packages/lang/golang/golang/
 
 #sed -i "/call Build\/check-size,\$\$(KERNEL_SIZE)/d" include/image.mk
+
+sed -i "/+= targz/d" include/image.mk
 
 git_clone_path master https://github.com/coolsnowwolf/lede mv target/linux/generic/hack-6.12
 
@@ -75,7 +73,6 @@ date=`date +%m.%d.%Y`
 sed -i -e "/\(# \)\?REVISION:=/c\REVISION:=$date" -e '/VERSION_CODE:=/c\VERSION_CODE:=$(REVISION)' include/version.mk
 
 sed -i 's/option timeout 30/option timeout 60/g' package/system/rpcd/files/rpcd.config
-sed -i 's#20) \* 1000#60) \* 1000#g' feeds/luci/modules/luci-base/htdocs/luci-static/resources/rpc.js
 
 sed -i \
 	-e "s/+\(luci\|luci-ssl\|uhttpd\)\( \|$\)/\2/" \

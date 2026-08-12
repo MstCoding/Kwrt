@@ -5,6 +5,8 @@ SHELL_FOLDER=$(dirname $(readlink -f "$0"))
 
 #bash $SHELL_FOLDER/../common/kernel_6.6.sh
 
+sed -i 's/Os/O2/g' include/target.mk
+
 rm -rf package/boot target/linux/rockchip
 
 git_clone_path master https://github.com/coolsnowwolf/lede target/linux/rockchip package/boot
@@ -12,6 +14,8 @@ git_clone_path master https://github.com/coolsnowwolf/lede target/linux/rockchip
 wget -N https://github.com/istoreos/istoreos/raw/refs/heads/istoreos-23.05/target/linux/rockchip/patches-5.15/305-r2s-pwm-fan.patch -P target/linux/rockchip/patches-6.12/
 
 wget -N https://github.com/coolsnowwolf/lede/raw/refs/heads/master/target/linux/generic/backport-6.12/203-v6.15-drivers-base-component-add-function-to-query-the-bound.patch -P target/linux/generic/backport-6.12/
+
+wget -N https://github.com/coolsnowwolf/lede/raw/refs/heads/master/target/linux/generic/backport-6.12/180-v6.14-compiler.h-add-const_true.patch -P target/linux/generic/backport-6.12/
 
 sed -i "/KernelPackage,ptp/d" package/kernel/linux/modules/other.mk
 
